@@ -9,6 +9,7 @@ namespace ConsoleTicTacToe
         private Board board;
         private Player player1;
         private Player player2;
+        private Player currentPlayer;
         private int turn = 1;
         private int status = 0; // 0 idle, 1 playing, 2 tie, 3 winner
         public Game()
@@ -16,6 +17,20 @@ namespace ConsoleTicTacToe
             this.player1 = new Player("1", 'X');
             this.player2 = new Player("2", 'O');
             this.board = new Board(player1, player2);
+            this.currentPlayer = player1;
+        }
+
+        private void ChangeTurn()
+        {
+            if (this.turn == 1)
+            {
+                this.turn = 2;
+                this.currentPlayer = player2;
+            } else
+            {
+                this.turn = 1;
+                this.currentPlayer = player1;
+            }
         }
 
         private bool CheckRow(Player player, int row)
@@ -58,6 +73,14 @@ namespace ConsoleTicTacToe
             return true;
         }
 
+        private void MovePlayer(int row, int col)
+        {
+            if (this.turn == 1)
+                board.MovePlayer1(row, col);
+            else if (this.turn == 2)
+                board.MovePlayer2(row, col);
+        }
+
         public void Start()
         {
             int selectedField;
@@ -82,58 +105,40 @@ namespace ConsoleTicTacToe
                         }
                         else
                         {
-                            int row = (selectedField - 1) / 3;
-                            int col = (selectedField - 1) % 3;
-                            if (this.turn == 1)
+                            try
                             {
-                                try
+                                int row = (selectedField - 1) / 3;
+                                int col = (selectedField - 1) % 3;
+
+                                this.MovePlayer(row, col);
+                                this.CheckRow(currentPlayer, row);
+                                this.CheckColumn(currentPlayer, col);
+                                if (row == col) this.CheckDiag(currentPlayer);
+                                if (row + col == 2) this.CheckAntiDiag(currentPlayer);
+
+                                if (currentPlayer.Winner)
                                 {
-                                    board.MovePlayer1(row, col);
-                                    this.CheckRow(player1, row);
-                                    this.CheckColumn(player1, col);
-                                    if (row == col) this.CheckDiag(player1);
-                                    if (row + col == 2) this.CheckAntiDiag(player1);
-                                    if (player1.Winner) Console.WriteLine("Player 1 wins");
-                                    this.turn = 2;
-                                } catch (Exception e)
-                                {
-                                    Console.WriteLine(e.Message + " Try again");
-                                    selectedField = 0;
+                                    Console.Clear();
+                                    stringBoard = board.GetRenderBoard();
+                                    Console.WriteLine(stringBoard);
+                                    Console.WriteLine("Game over");
+                                    Console.WriteLine("Player " + currentPlayer.Name + " wins");
+                                    this.status = 3;
                                 }
-                            }
-                            else if (this.turn == 2)
-                            {
-                                try
+                                if (board.IsFull)
                                 {
-                                    board.MovePlayer2(row, col);
-                                    this.CheckRow(player2, row);
-                                    this.CheckColumn(player2, col);
-                                    if (row == col) this.CheckDiag(player2);
-                                    if (row + col == 2) this.CheckAntiDiag(player2);
-                                    if (player2.Winner) Console.WriteLine("Player 2 wins");
-                                    this.turn = 1;
+                                    Console.Clear();
+                                    stringBoard = board.GetRenderBoard();
+                                    Console.WriteLine(stringBoard);
+                                    Console.WriteLine("Tie");
+                                    this.status = 2;
                                 }
-                                catch (Exception e)
-                                {
-                                    Console.WriteLine(e.Message + " Try again");
-                                    selectedField = 0;
-                                }
+                                ChangeTurn();
                             }
-                            if (player1.Winner || player2.Winner)
+                            catch (Exception e)
                             {
-                                Console.Clear();
-                                stringBoard = board.GetRenderBoard();
-                                Console.WriteLine(stringBoard);
-                                Console.WriteLine("Game over");
-                                this.status = 3;
-                            }
-                            if (board.IsFull)
-                            {
-                                Console.Clear();
-                                stringBoard = board.GetRenderBoard();
-                                Console.WriteLine(stringBoard);
-                                Console.WriteLine("Tie");
-                                this.status = 2;
+                                Console.WriteLine(e.Message + " Try again");
+                                selectedField = 0;
                             }
                         }
                     }

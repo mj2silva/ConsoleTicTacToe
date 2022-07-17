@@ -67,7 +67,6 @@ namespace ConsoleTicTacToe
         public void MovePlayer1(int x, int y)
         {
             this.MovePlayer(player1, x, y);
-            UpdatePlayerSpots(player1);
         }
 
         /// <summary>
@@ -78,7 +77,6 @@ namespace ConsoleTicTacToe
         public void MovePlayer2(int x, int y)
         {
             this.MovePlayer(player2, x, y);
-            UpdatePlayerSpots(player2);
         }
 
         /// <summary>
@@ -96,6 +94,7 @@ namespace ConsoleTicTacToe
                 throw new FieldAccessException("Spot is already taken");
 
             player.TakenSpots[x, y] = true;
+            board[x, y] = player.Character;
             takenFields++;
             if (takenFields == 9) this.IsFull = true;
         }
